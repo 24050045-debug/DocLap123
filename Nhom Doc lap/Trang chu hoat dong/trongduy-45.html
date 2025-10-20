@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Cá Nhân - Trương Trọng Duy</title>
+    <!-- Tải Tailwind CSS CDN để sử dụng các lớp tiện ích hiện đại -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Cấu hình Tailwind (tùy chọn: đặt font Inter) -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary': '#4F46E5', // Màu tím chủ đạo
+                        'secondary': '#10B981', // Màu xanh phụ
+                        'dark-bg': '#111827', // Nền tối
+                        'dark-card': '#374151', // Thẻ tối
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Phong cách tùy chỉnh và Transition cho Skill Bar, Modal -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Nền sáng mặc định */
+            transition: all 0.5s ease;
+        }
+        /* Hiệu ứng di chuột cho các nút */
+        .hover-lift {
+            transition: all 0.3s;
+        }
+        .hover-lift:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Hiệu ứng chuyển động cho thanh tiến trình */
+        .skill-bar {
+            /* Đảm bảo transition mượt mà cho thuộc tính width */
+            transition: width 1.5s ease-out; 
+            /* Ban đầu width được set bằng 0 trong JS, sau đó mới áp dụng giá trị thực */
+        }
+
+        /* Thêm CSS cho Viền Chữ Kỹ Năng (Light Mode) */
+        .skill-text-outline {
+            /* Màu chữ (fill) là màu trắng/rất sáng */
+            color: #F9FAFB; 
+            /* Tạo viền chữ màu đen (chỉ hoạt động với webkit, nhưng là cách tốt nhất cho viền chữ) */
+            -webkit-text-stroke: 1.5px #000; 
+            
+            font-weight: 700; /* Làm chữ đậm hơn */
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1); /* Thêm bóng mờ nhẹ */
+        }
+
+        /* Tùy chỉnh màu chữ và nền cho dark mode */
+        .dark-mode body {
+            background-color: #111827;
+        }
+        .dark-mode .text-gray-800, .dark-mode .text-gray-700 {
+            color: #F9FAFB;
+        }
+        .dark-mode .text-gray-600, .dark-mode .text-gray-500 {
+            color: #D1D5DB;
+        }
+        .dark-mode .bg-white {
+            background-color: #374151;
+            border-color: #4B5563;
+        }
+        .dark-mode .border-gray-200 {
+            border-color: #4B5563;
+        }
+        .dark-mode .bg-gray-200 {
+            background-color: #4B5563;
+        }
+        /* Trong Dark Mode, loại bỏ viền và chuyển màu chữ thành sáng */
+        .dark-mode .skill-text-outline {
+            -webkit-text-stroke: 0;
+           
+            color: #F9FAFB; /* Chữ màu sáng */
+            text-shadow: none;
+        }
+
+        /* Modal styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75);
+            display: none; /* Ẩn ban đầu */
+            justify-content: center;
+            align-items: center;
+            z-index: 50; /* Cao hơn mọi thứ khác */
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .modal-content {
+            background-color: #ffffff;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(-50px);
+            transition: transform 0.3s ease-in-out;
+        }
+        .modal-overlay.open {
+            display: flex;
+            opacity: 1;
+        }
+        .modal-overlay.open .modal-content {
+            transform: translateY(0);
+        }
+        .dark-mode .modal-content {
+            background-color: #1F2937; /* Nền tối cho modal */
+            color: #F9FAFB;
+        }
+        .dark-mode .modal-header h3 {
+            color: #F9FAFB;
+        }
+    </style>
+</head>
+
+<body class="p-4 sm:p-8 flex justify-center items-start min-h-screen">
+
+    <!-- Container Chính -->
+    <div class="w-full max-w-4xl bg-white shadow-2xl rounded-xl overflow-hidden p-6 sm:p-10 border border-gray-100 hover-lift">
+
+        <!-- Phần 1: Header và Ảnh Đại Diện -->
+        <header class="flex flex-col sm:flex-row items-center sm:items-start space-y-6 sm:space-y-0 sm:space-x-8 pb-8 border-b border-gray-200">
+            
+            <!-- Vùng ảnh đại diện -->
+            <div class="relative w-32 h-32 flex-shrink-0">
+                <img src="images/Cat Flying GIF.gif" 
+                    alt="Ảnh đại diện" 
+                    class="rounded-full w-full h-full object-cover border-4 border-primary shadow-lg">
+                <span class="absolute bottom-1 right-1 block h-4 w-4 rounded-full ring-2 ring-white bg-green-400" title="Đang hoạt động"></span>
+            </div>
+            
+            <!-- Thông tin cơ bản -->
+            <div class="text-center sm:text-left">
+                <h1 class="text-4xl font-extrabold text-gray-800 tracking-tight">Trương Trọng Duy</h1>
+                <p class="text-xl font-medium text-primary mt-1">Nhà Phát Triển bằng Germini | 3 năm kinh nghiệm</p>
+                <p class="text-gray-500 mt-2">Đồng Nai, Việt Nam | Thành Tâm, Chơn Thành, Bình Phước</p>
+            </div>
+        </header>
+
+        <!-- Phần 2: Giới Thiệu Bản Thân (About Me) -->
+        <section class="mt-8">
+            <h2 class="text-2xl font-bold text-gray-700 mb-4 border-l-4 border-secondary pl-3">Giới Thiệu</h2>
+            <p class="text-gray-600 leading-relaxed text-lg">
+                Chào mừng đến trang cá nhân của em, là một người đam mê công nghệ. Sở thích của em là
+                <span class="font-semibold text-primary">khám phá mọi cung đường VN</span>. Kĩ năng tiếp nhìn nhận mọi trường hợp 1
+                cách nhanh nhẹn và phối hợp 1 cách ăn ý. Như việc có thể hiểu nhanh các code nó thể sẽ làm đc gì và cho vào như thế nào
+            </p>
+        </section>
+
+        <!-- Phần 3: Kỹ Năng (Skills) - ĐÃ CẬP NHẬT VIỀN CHỮ -->
+        <section class="mt-10">
+            <h2 class="text-2xl font-bold text-gray-700 mb-6 border-l-4 border-secondary pl-3">Bộ Kỹ Năng Chính</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                
+                <!-- Kỹ năng 1: HTML5 & CSS3 -->
+                <div class="hover-lift">
+                    <div class="flex justify-between mb-1">
+                        <!-- Áp dụng skill-text-outline -->
+                        <span class="text-base font-medium skill-text-outline dark:text-gray-100">HTML5 & CSS3</span>
+                        <span class="text-sm font-semibold text-primary">90%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="bg-primary h-2.5 rounded-full skill-bar" data-progress="90" style="width: 0;"></div>
+                    </div>
+                </div>
+                
+                <!-- Kỹ năng 2: Tailwind CSS -->
+                <div class="hover-lift">
+                    <div class="flex justify-between mb-1">
+                        <!-- Áp dụng skill-text-outline -->
+                        <span class="text-base font-medium skill-text-outline dark:text-gray-100">Tailwind CSS</span>
+                        <span class="text-sm font-semibold text-primary">85%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="bg-primary h-2.5 rounded-full skill-bar" data-progress="85" style="width: 0;"></div>
+                    </div>
+                </div>
+                
+                <!-- Kỹ năng 3: JavaScript (ES6+) -->
+                <div class="hover-lift">
+                    <div class="flex justify-between mb-1">
+                        <!-- Áp dụng skill-text-outline -->
+                        <span class="text-base font-medium skill-text-outline dark:text-gray-100">JavaScript (ES6+)</span>
+                        <span class="text-sm font-semibold text-secondary">75%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="bg-secondary h-2.5 rounded-full skill-bar" data-progress="75" style="width: 0;"></div>
+                    </div>
+                </div>
+                
+                <!-- Kỹ năng 4: React.js -->
+                <div class="hover-lift">
+                    <div class="flex justify-between mb-1">
+                        <!-- Áp dụng skill-text-outline -->
+                        <span class="text-base font-medium skill-text-outline dark:text-gray-100">React.js</span>
+                        <span class="text-sm font-semibold text-secondary">60%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="bg-secondary h-2.5 rounded-full skill-bar" data-progress="60" style="width: 0;"></div>
+                    </div>
+                </div>
+                
+                <!-- Kỹ năng 5: Node.js & Express -->
+                <div class="hover-lift">
+                    <div class="flex justify-between mb-1">
+                        <!-- Áp dụng skill-text-outline -->
+                        <span class="text-base font-medium skill-text-outline dark:text-gray-100">Node.js & Express</span>
+                        <span class="text-sm font-semibold text-gray-700 dark:text-gray-400">50%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="bg-gray-500 h-2.5 rounded-full skill-bar" data-progress="50" style="width: 0;"></div>
+                    </div>
+                </div>
+                
+                <!-- Kỹ năng 6: Thiết Kế UI/UX -->
+                <div class="hover-lift">
+                    <div class="flex justify-between mb-1">
+                        <!-- Áp dụng skill-text-outline -->
+                        <span class="text-base font-medium skill-text-outline dark:text-gray-100">Thiết Kế UI/UX</span>
+                        <span class="text-sm font-semibold text-gray-700 dark:text-gray-400">80%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="bg-gray-500 h-2.5 rounded-full skill-bar" data-progress="80" style="width: 0;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Phần 4: Liên Hệ & Mạng Xã Hội -->
+        <section class="mt-10">
+            <h2 class="text-2xl font-bold text-gray-700 mb-4 border-l-4 border-secondary pl-3">Liên Hệ</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                
+                <!-- Dự Án (ĐÃ SỬA TỪ EMAIL) -->
+                <a href="#" onclick="openProjectModal(); return false;"
+                    class="flex items-center space-x-3 p-4 bg-secondary/10 text-secondary rounded-lg font-medium hover:bg-secondary hover:text-white transition hover-lift">
+                    <!-- Icon Dự Án (Inline SVG: Folder) -->
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+                    <span>Xem Dự Án Cá Nhân</span>
+                </a>
+
+                <!-- Facebook -->
+                <a href="https://www.facebook.com/trong.duy.544588/" target="_blank" 
+                    class="flex items-center space-x-3 p-4 bg-blue-600/10 text-blue-700 rounded-lg font-medium hover:bg-blue-700 hover:text-white transition hover-lift">
+                    <!-- Icon Facebook (Inline SVG) -->
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.24.195 2.24.195v2.46h-1.26c-1.243 0-1.63.77-1.63 1.563V12h2.77l-.44 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"></path></svg>
+                    <span>Fb/TrongDuy</span>
+                </a>
+
+                <!-- Discord -->
+                <a href="http://discord.com/channels/@me" target="_blank" 
+                    class="flex items-center space-x-3 p-4 bg-indigo-600/10 text-indigo-700 rounded-lg font-medium hover:bg-indigo-700 hover:text-white transition hover-lift">
+                    <!-- Icon Discord (Inline SVG) -->
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20.3 3.4C18.6 1.7 15.7 1 12 1S5.4 1.7 3.7 3.4C2 5.1 1.3 8 1.3 12c0 4.7 2.9 8.6 6.9 10.3.5.2.7-.1.7-.4V19c0-.4-.1-.7-.3-1a8.8 8.8 0 01-2.6-1.8c-.3-.2-.6-.3-.9-.3-.5 0-.7.3-.7.7 0 .2.1.4.2.5.3.3.7.6 1.1.8.3.1.5.2.8.2.2 0 .4-.1.6-.2.4-.2.8-.5 1.3-.8 1.3-.8 2.5-1.5 4.1-1.5h.1c1.6 0 2.8.7 4.1 1.5.4.3.8.5 1.3.8.2.1.4.2.6.2.3 0 .5-.1.8-.2.4-.2.8-.5 1.1-.8.2-.2.3-.5.3-1s-.2-.7-.7-1a8.8 8.8 0 01-2.6-1.8c-.2-.3-.3-.6-.3-1V8.5c0-.3.2-.5.5-.4 4.5.8 7.9-2.2 7.9-7.2 0-3.3-1.2-6.2-3.7-8.2zM12 16.5c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+                    </svg>
+                    <span>Discord/TrongDuy</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- Phần 5: Chân Trang -->
+        <footer class="mt-12 pt-6 border-t border-gray-200 text-center text-sm text-gray-400">
+            © 2025 Trương Trọng Duy-24050045
+        </footer>
+
+    </div>
+
+    <!-- MODAL DỰ ÁN (Project Modal) -->
+    <div id="modalOverlay" class="modal-overlay">
+        <div id="projectModal" class="modal-content shadow-2xl">
+            <!-- Header Modal -->
+            <div class="modal-header flex justify-between items-center pb-4 border-b border-gray-200 dark:border-gray-600">
+                <h3 class="text-3xl font-extrabold text-gray-800">Dự Án Cá Nhân Tiêu Biểu</h3>
+                <button onclick="closeProjectModal()" class="p-2 rounded-full text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition">
+                    <!-- Icon Close (X) -->
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <!-- Nội dung Dự án -->
+            <div class="mt-6">
+                <!-- Dòng Tiêu Đề Dự Án -->
+                <h4 class="text-xl font-semibold text-primary mb-6">Các Dự Án Tương Lai</h4>
+                
+                <!-- Grid 3 Ảnh -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    
+                    <!-- Ảnh 1 -->
+                    <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 hover:shadow-lg transition">
+                        <img src="images/Duy.jpg" alt="Dự án 1" class="w-full h-auto object-cover rounded-md mb-2">
+                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300 text-center">Cải thiện bản thân</p>
+                    </div>
+
+                    <!-- Ảnh 2 -->
+                    <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 hover:shadow-lg transition">
+                        <img src="images/Resroom.jpg" alt="Dự án 2" class="w-full h-auto object-cover rounded-md mb-2">
+                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300 text-center">Đi khám nhiều nơi trên Vũng Tàu</p>
+                    </div>
+
+                    <!-- Ảnh 3 -->
+                    <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 hover:shadow-lg transition">
+                        <img src="images/VungTau.jpg" alt="Dự án 3" class="w-full h-auto object-cover rounded-md mb-2">
+                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300 text-center">Những phong cảnh đẹp</p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- KẾT THÚC MODAL DỰ ÁN -->
+
+    <!-- Tùy chọn: Thêm nút chuyển đổi chế độ Sáng/Tối -->
+    <button id="themeToggle" 
+            class="fixed bottom-4 right-4 p-3 rounded-full bg-gray-800 text-white shadow-lg hover:bg-primary transition hover-lift">
+        <!-- Icon Mặt Trăng (Dark Mode) -->
+        <svg id="moonIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        <!-- Icon Mặt Trời (Light Mode - ẩn ban đầu) -->
+        <svg id="sunIcon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.354 3.354l-.707-.707M5.646 5.646l-.707-.707M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    </button>
+    
+    <!-- Script xử lý hiệu ứng kỹ năng và chế độ Sáng/Tối -->
+    <script>
+        /**
+         * Chức năng 1: Kích hoạt hiệu ứng thanh tiến trình (Skill Bar Animation)
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            const skillBars = document.querySelectorAll('.skill-bar');
+
+            // Sử dụng setTimeout để đảm bảo trình duyệt đã render DOM với width: 0 
+            // trước khi áp dụng width thực tế, điều này kích hoạt hiệu ứng CSS transition.
+            setTimeout(() => {
+                skillBars.forEach(bar => {
+                    const percentage = bar.getAttribute('data-progress');
+                    bar.style.width = percentage + '%';
+                });
+            }, 100); // Độ trễ nhỏ (100ms) để transition được kích hoạt mượt mà
+        });
+
+
+        /**
+         * Chức năng 2: Chuyển đổi chế độ Sáng/Tối (Dark Mode)
+         */
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            const body = document.body;
+            const card = document.querySelector('.max-w-4xl');
+            const isDarkMode = body.classList.toggle('dark-mode');
+            
+            // Cập nhật giao diện
+            if (isDarkMode) {
+                // Chế độ tối
+                body.classList.remove('bg-f3f4f6');
+                body.classList.add('bg-dark-bg');
+                card.classList.remove('bg-white', 'shadow-2xl', 'border-gray-100');
+                card.classList.add('bg-dark-card', 'shadow-3xl', 'border-gray-700');
+                document.getElementById('moonIcon').classList.add('hidden');
+                document.getElementById('sunIcon').classList.remove('hidden');
+
+            } else {
+                // Chế độ sáng
+                body.classList.add('bg-f3f4f6');
+                body.classList.remove('bg-dark-bg');
+                card.classList.add('bg-white', 'shadow-2xl', 'border-gray-100');
+                card.classList.remove('bg-dark-card', 'shadow-3xl', 'border-gray-700');
+                document.getElementById('moonIcon').classList.remove('hidden');
+                document.getElementById('sunIcon').classList.add('hidden');
+            }
+        });
+
+        /**
+         * Chức năng 3: Điều khiển Modal Dự Án
+         */
+        const modalOverlay = document.getElementById('modalOverlay');
+        
+        function openProjectModal() {
+            modalOverlay.classList.add('open');
+            document.body.style.overflow = 'hidden'; // Ngăn cuộn nền
+        }
+
+        function closeProjectModal() {
+            modalOverlay.classList.remove('open');
+            // Đợi animation kết thúc (0.3s) rồi mới ẩn hoàn toàn và cho phép cuộn lại
+            setTimeout(() => {
+                 document.body.style.overflow = ''; // Cho phép cuộn lại
+            }, 300);
+        }
+
+        // Đóng modal khi click ra ngoài (trên lớp overlay)
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) {
+                closeProjectModal();
+            }
+        });
+    </script>
+</body>
+</html>
